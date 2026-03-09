@@ -333,28 +333,114 @@ jobs:
               }
           }
           EOF
-
-          cat > app/src/main/java/com/lifecalendar/LifeCalendarWallpaperService.java << 'EOF'
+cat > app/src/main/java/com/lifecalendar/LifeCalendarWallpaperService.java << 'EOF'
           package com.lifecalendar;
           import android.content.SharedPreferences;
           import android.graphics.Canvas;
           import android.graphics.Color;
           import android.graphics.Paint;
-          - name: Build APK
+          import android.graphics.RectF;
+          import android.os.Handler;
+          import android.os.Looper;
+          import android.service.wallpaper.WallpaperService;
+          import android.view.SurfaceHolder;
+          import java.util.Calendar;
+          import java.util.TimeZone;
+          public class LifeCalendarWallpaperService extends WallpaperService {
+              @Override public Engine onCreateEngine(){return new CalendarEngine();}
+              class CalendarEngine extends Engine {
+                  private final Handler handler=new Handler(Looper.getMainLooper());
+                  private final Runnable ticker=this::draw;
+                  private boolean visible=true;
+                  private float pulse=1f,pulseDir=0.02f;
+                  private Paint bg,dn,td,lf,clk,dt,st,bbg,br;
+                  @Override public void onCreate(SurfaceHolder s){
+                      super.onCreate(s);
+                      bg=p("#0a0a0a");dn=p("#ffffff");td=p("#ff4f6d");lf=p("#2a2a2a");
+                      clk=p("#ffffff");clk.setFakeBoldText(true);clk.setTextAlign(Paint.Align.CENTER);
+                      dt=p("#666666");dt.setTextAlign(Paint.Align.CENTER);
+                      st=p("#ff4f6d");st.setTextAlign(Paint.Align.CENTER);
+                      bbg=p("#1e1e1e");br=p("#ff4f6d");
+                  }
+                  Paint p(String c){Paint x=new Paint(Paint.ANTI_ALIAS_FLAG);x.setColor(Color.parseColor(c));return x;}
+                  @Override public void onVisibilityChanged(boolean v){visible=v;if(v)handler.post(ticker);else handler.removeCallbacks(ticker);}
+                  @Override public void onSurfaceDestroyed(SurfaceHolder h){visible=false;handler.removeCallbacks(ticker);}
+                  @Override public void onSurfaceChanged(SurfaceHolder h,int f,int w,int ht){draw();}
+                  void draw(){
+                      SurfaceHolder h=getSurfaceHolder();Canvas c=null;
+                      try{c=h.lockCanvas();if(c!=null)render(c);}finally{if(c!=null)h.unlockCanvasAndPost(c);}
+                      handler.removeCallbacks(ticker);
+                      if(visible){pulse+=pulseDir;if(pulse>1.15f)pulseDir=-0.02f;if(pulse<1f)pulseDir=0.02f;handler.postDelayed(ticker,50);}
+                  }
+                  void render(Canvas c){
+                      float W=c.getWidth(),H=c.getHeight();
+                      c.drawRect(0,0,W,H,bg);
+                      SharedPreferences pr=getSharedPreferences("LifeCalPrefs",MODE_PRIVATE);
+                      String mode=pr.getString("mode","year");
+                      long sMs=pr.getLong("startMillis",0),eMs=pr.getLong("endMillis",0);
+                      Calendar t=Calendar.getInstance();
+                      t.set(Calendar.HOUR_OF_DAY,0);t.set(Calendar.MINUTE,0);t.set(Calendar.SECOND,0);t.set(Calendar.MILLISECOND,0);
+                      int total,done;
+                      if(mode.equals("year")){total=t.getActualMaximum(Calendar.DAY_OF_YEAR);done=t.get(Calendar.DAY_OF_YEAR)-1;}
+                      else if(sMs>0){
+                          Calendar s=Calendar.getInstance(TimeZone.getTimeZone("UTC"));s.setTimeInMillis(sMs);s.set(Calendar.HOUR_OF_DAY,0);s.set(Calendar.MINUTE,0);s.set(Calendar.SECOND,0);s.set(Calendar.MILLISECOND,0);
+                          Calendar e=Calendar.getInstance(TimeZone.getTimeZone("UTC"));e.setTimeInMillis(eMs>0?eMs:sMs+365L*86400000L);e.set(Calendar.HOUR_OF_DAY,0);e.set(Calendar.MINUTE,0);e.set(Calendar.SECOND,0);e.set(Calendar.MILLISECOND,0);
+                          total=(int)((e.getTimeInMillis()-s.getTimeInMillis())/86400000L)+1;
+                          done=Math.max(0,Math.min((int)((t.getTimeInMillis()-s.getTimeInMillis())/86400000L),total));
+                      }else{total=365;done=0;}
+                      int pct=total>0?(int)(done*100.0/total):0;
+                      float pad=W*0.05f;
+                      Calendar now=Calendar.getInstance();
+                      String time=String.format("%02d:%02d",now.get(Calendar.HOUR_OF_DAY),now.get(Calendar.MINUTE));
+                      String[]mo={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+                      String[]dy={"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+                      String ds=dy[now.get(Calendar.DAY_OF_WEEK)-1]+", "+now.get(Calendar.DAY_OF_MONTH)+" "+mo[now.get(Calendar.MONTH)];
+                      clk.setTextSize(W*0.14f);c.drawText(time,W/2,H*0.12f,clk);
+                      dt.setTextSize(W*0.035f);c.drawText(ds.toUpperCase(),W/2,H*0.12f+W*0.045f,dt);
+                      float gTop=H*0.22f,gBot=H*0.88f,gW=W-pad*2;
+                      int cols=20;float sp=gW/cols,r=sp*0.35f;
+                      int rows=(int)Math.ceil((double)total/cols);
+                      float sy=gTop+(gBot-gTop-rows*sp)/2f;
+                      for(int i=0;i<total;i++){
+                          float cx=pad+(i%cols)*sp+sp/2f,cy=sy+(i/cols)*sp+sp/2f;
+                          if(i==done){td.setShadowLayer(r*2,0,0,0x88ff4f6d);c.drawCircle(cx,cy,r*pulse,td);}
+                          else if(i<done){dn.clearShadowLayer();c.drawCircle(cx,cy,r,dn);}
+                          else{lf.clearShadowLayer();c.drawCircle(cx,cy,r,lf);}
+                      }
+                      st.setTextSize(W*0.042f);
+                      c.drawText(done+"d done | "+pct+"% | "+(total-done)+"d left",W/2,gBot+(H-gBot)*0.35f,st);
+                      float by=gBot+(H-gBot)*0.68f,bh=H*0.005f;
+                      c.drawRoundRect(new RectF(pad,by,W-pad,by+bh),bh/2,bh/2,bbg);
+                      float fw=(W-pad*2)*pct/100f;
+                      if(fw>0)c.drawRoundRect(new RectF(pad,by,pad+fw,by+bh),bh/2,bh/2,br);
+                  }
+              }
+          }
+          EOF
+
+          pip install Pillow -q
+          python3 << 'PYEOF'
+          from PIL import Image, ImageDraw
+          sizes={'hdpi':72,'xhdpi':96,'xxhdpi':144}
+          for d,s in sizes.items():
+              img=Image.new('RGBA',(s,s),(10,10,10,255))
+              draw=ImageDraw.Draw(img)
+              cols=6;margin=s*0.1;sp=(s-2*margin)/cols;r=sp*0.3
+              for row in range(6):
+                  for col in range(6):
+                      cx=margin+col*sp+sp/2;cy=margin+row*sp+sp/2;idx=row*6+col
+                      color=(255,79,109,255) if idx==16 else ((255,255,255,220) if idx<16 else (42,42,42,255))
+                      draw.ellipse([cx-r,cy-r,cx+r,cy+r],fill=color)
+              p=f'app/src/main/res/mipmap-{d}/'
+              img.save(p+'ic_launcher.png');img.save(p+'ic_launcher_round.png')
+          PYEOF
+
+      - name: Build APK
         run: gradle assembleDebug
 
       - uses: actions/upload-artifact@v4
         with:
           name: LifeCalendar-APK
           path: app/build/outputs/apk/debug/app-debug.apk
-                - name: Make Gradlew Executable
-        run: chmod +x gradlew
-
-      - name: Build APK
-        run: ./gradlew assembleDebug
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: LifeCalendar-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
           
+      

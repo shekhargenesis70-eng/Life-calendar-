@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0a0a0a">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Life Calendar"
+            android:textColor="#ffffff"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Your days as dots"
+            android:textColor="#666666"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:layout_marginBottom="28dp" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="#161616"
+            app:tabTextColor="#666666"
+            app:tabSelectedTextColor="#ffffff"
+            app:tabIndicatorColor="#ff4f6d"
+            android:layout_marginBottom="24dp">
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Year" />
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Love" />
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Goal" />
+        </com.google.android.material.tabs.TabLayout>
+
+        <TextView
+            android:id="@+id/tvMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#ff4f6d"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginBottom="20dp" />
+
+        <TextView
+            android:id="@+id/tvStartDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#aaaaaa"
+            android:textSize="14sp"
+            android:background="#161616"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/btnPickStart"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Pick Start Date"
+            android:textColor="#ffffff"
+            android:backgroundTint="#ff4f6d"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/tvEndDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#aaaaaa"
+            android:textSize="14sp"
+            android:background="#161616"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/btnPickEnd"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Pick End Date"
+            android:textColor="#ffffff"
+            android:backgroundTint="#333333"
+            android:layout_marginBottom="28dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+                android:background="#161616" android:padding="16dp" android:layout_marginEnd="6dp">
+                <TextView android:id="@+id/tvDaysDone" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0"
+                    android:textColor="#ff4f6d" android:textSize="26sp" android:textStyle="bold" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="DONE" android:textColor="#666666" android:textSize="10sp" />
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+                android:background="#161616" android:padding="16dp" android:layout_marginEnd="6dp">
+                <TextView android:id="@+id/tvDaysLeft" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="365"
+                    android:textColor="#ff4f6d" android:textSize="26sp" android:textStyle="bold" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="LEFT" android:textColor="#666666" android:textSize="10sp" />
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+                android:background="#161616" android:padding="16dp">
+                <TextView android:id="@+id/tvPercent" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0%"
+                    android:textColor="#ff4f6d" android:textSize="26sp" android:textStyle="bold" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="%" android:textColor="#666666" android:textSize="10sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvMilestone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#1a0a0e"
+            android:padding="14dp"
+            android:textColor="#ff8fa3"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:layout_marginBottom="28dp" />
+
+        <Button
+            android:id="@+id/btnSetWallpaper"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="SET AS LIVE WALLPAPER"
+            android:textColor="#ffffff"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:backgroundTint="#ff4f6d"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="After tapping above, choose Life Calendar from the live wallpapers list"
+            android:textColor="#444444"
+            android:textSize="11sp"
+            android:gravity="center"
+            android:layout_marginBottom="32dp" />
+
+    </LinearLayout>
+</ScrollView>
